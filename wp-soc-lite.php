@@ -104,8 +104,9 @@ if ( ! class_exists( 'wp_soc_lite' )
         private function int_actions() {
             // Register activation, deactivation and uninstall hooks,
             // run Threat Equation on init
-            require_once TE_PATH . '/core/soc_activate.php';
-            require_once TE_PATH . '/core/soc_functions.php';
+            require_once SL_PATH . '/core/soc_activate.php';
+            require_once SL_PATH . '/core/soc_functions.php';
+            sl_config(); die();
 
             register_activation_hook( __FILE__, ['soc_activate', 'activate'] );
             // register_deactivation_hook( __FILE__, 'wp_soc_lite::deactivate' );
