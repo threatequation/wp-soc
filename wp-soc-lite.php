@@ -23,6 +23,16 @@ if ( ! class_exists( 'wp_soc_lite' )
     && version_compare( PHP_VERSION, '5.6', '>=' ) ) :
     
     class wp_soc_lite {
+
+
+        /**
+         * An instance of this class
+         *
+         * @var object
+         */
+        private static $instance = null;
+
+
         /**
          * Constructor
          *
@@ -39,6 +49,8 @@ if ( ! class_exists( 'wp_soc_lite' )
 
             $this->define_constant();
             $this->includes();
+            $this->int_actions();
+            $this->int_filters();
         }
 
         /**
@@ -70,12 +82,12 @@ if ( ! class_exists( 'wp_soc_lite' )
          * @return null;
          */
         private function define_constant() {
-            $this->define( "TE_PATH", dirname( __FILE__ ) );
-            $this->define( "TE_DIR", __DIR__ );
-            $this->define( "INTRUSIONS_TABLE", "wpsl_intrusions");
-            $this->define( "VERSION",  "1.0.1");
-            $this->define( "DB_VERSION", "0.1");
-            $this->define( "POST_TYPE", "wpsl");
+            $this->define( "SL_PATH", dirname( __FILE__ ) );
+            $this->define( "SL_DIR", __DIR__ );
+            $this->define( "SL_INTRUSIONS_TABLE", "wpsl_intrusions" );
+            $this->define( "SL_VERSION",  "1.0.1" );
+            $this->define( "SL_DB_VERSION", "0.1" );
+            $this->define( "SL_POST_TYPE", "wpsl" );
         }
 
 
@@ -83,22 +95,33 @@ if ( ! class_exists( 'wp_soc_lite' )
          * include required files
          */
         private function includes() {
-            require_once TE_PATH . '/libraries/includes/functions.php';
-            require_once TE_PATH . '/libraries/includes/hooks.php';
-            require_once TE_PATH . '/libraries/includes/Utils.php';
+
         }
 
         /**
          * Actions for plugins
          */
         private function int_actions() {
+            // Register activation, deactivation and uninstall hooks,
+            // run Threat Equation on init
+            require_once TE_PATH . '/core/soc_activate.php';
+            require_once TE_PATH . '/core/soc_functions.php';
 
+            register_activation_hook( __FILE__, ['soc_activate', 'activate'] );
+            // register_deactivation_hook( __FILE__, 'wp_soc_lite::deactivate' );
+            // register_uninstall_hook( __FILE__, 'wp_soc_lite::uninstall' );
+
+            add_action( 'plugins_loaded',  [ $this, 'init' ] );
         }
 
         /**
          * Filder for plugins
          */
         private function int_filters() {
+
+        }
+
+        public function init () {
 
         }
 
@@ -113,5 +136,14 @@ if ( ! class_exists( 'wp_soc_lite' )
         }
 
     }
+
+
+
+
+    function wp_soc_lite () {
+        return wp_soc_lite::instance();
+    }
+
+    wp_soc_lite();
 
 endif;
