@@ -25,7 +25,6 @@ class soc_admin {
 		// add_filter( 'screen_settings', array( $this, 'screen_settings' ), 10, 2 );
 		// add_filter( 'set-screen-option', array( $this, 'set_screen_option' ), 10, 3 );
 		// add_filter( 'plugin_action_links_tewp/tewp.php', array( $this, 'plugin_action_links' ) );
-		add_action( 'load-dashboard_page_mscr_intrusions', array( $this, 'sl_dashboard_page_intrusions' ) );
     }
     
      /**
@@ -40,40 +39,7 @@ class soc_admin {
             return self::$instance = new self();
         }
     }
-	/**
-	 * Intrusions page load action
-	 *
-	 * @return void
-	 */
-	public function sl_dashboard_page_intrusions() {
-		// WordPress 3.3
-		if ( function_exists( 'wp_suspend_cache_addition' ) ) {
-			$args = array(
-				'title' => 'Help',
-				'id' => 'soc_lite_help',
-				'content' => $this->get_contextual_help(),
-			);
-			get_current_screen()->add_help_tab( $args );
-		}
-		// WordPress 3.1 and later
-		else if ( function_exists( 'get_current_screen' ) ) {
-			// Add help to the intrusions list page
-			add_contextual_help( get_current_screen(), $this->get_contextual_help() );
-		}
-	}
-
-	/**
-	 * Get contextual help for the intrusions page
-	 *
-	 * @return string
-	 */
-	public function get_contextual_help() {
-		return '<p>' . __( 'Hovering over a row in the intrusions list will display action links that allow you to manage the intrusion. You can perform the following actions:', 'wp-soc-lite' ) . '</p>' .
-			'<ul>' .
-			'<li>' . __( 'Exclude automatically adds the item to the Exception fields list.', 'wp-soc-lite' ) . '</li>' .
-			'<li>' . __( 'Delete permanently deletes the intrusion.', 'wp-soc-lite' ) . '</li>' .
-			'</ul>';
-	}
+	
 
 	/**
 	 * Admin init
@@ -93,7 +59,7 @@ class soc_admin {
 		}
 
 		// Add admin CSS
-		wp_enqueue_style( 'mscr_styles', ThreatEquation::plugin_url() . 'css/mscr.css', array(), ThreatEquation::VERSION );
+		wp_enqueue_style( 'soc_styles', ThreatEquation::plugin_url() . 'css/mscr.css', array(), ThreatEquation::VERSION );
 
 		// Once a setting is registered updating options
 		// will run options_validate on every call to update_option
@@ -288,7 +254,7 @@ class soc_admin {
 		// $intrusions_menu_title = sprintf( __( 'Intrusions %s', 'wp-soc-lite' ), "<span class='update-plugins count-$intrusion_count' title='$intrusion_count'><span class='update-count'>" . number_format_i18n( $intrusion_count ) . '</span></span>' );
 		
 		
-		add_menu_page( __( 'Soc Lite', 'wp-soc-lite' ), __( 'Soc Lite', 'wp-soc-lite' ), 'activate_plugins' , 'soc_lite', array( $this, 'intrusions' ), 'dashicons-networking' );
+		add_menu_page( __( 'Soc Lite', 'wp-soc-lite' ), __( 'Soc Lite', 'wp-soc-lite' ), 'activate_plugins' , 'soc_lite', array( $this, 'intrusions' ), 'dashicons-shield' );
 		add_submenu_page(
 	        'soc_lite',
 	        'Options',
@@ -473,11 +439,10 @@ class soc_admin {
 	 * @return void
 	 */
 	public function options() {
-		$options = get_option( 'mscr_options' );
-		$default_options = ThreatEquation::default_options();
+		
+		$options = sl_config();
 
-		// Make sure we have all the options
-		$options = array_merge( $default_options, $options );
+
 
 		// Prep exception data
 		$options['exception_fields'] = implode( "\r\n", $options['exception_fields'] );
@@ -495,6 +460,6 @@ class soc_admin {
 			$options['json_fields'] = esc_html( $options['json_fields'] );
 		}
 
-		MSCR_Utils::view( 'admin_options', $options );
+		soc_utils::view( 'admin_options', $options );
 	}
 }

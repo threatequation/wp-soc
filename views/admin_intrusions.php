@@ -19,11 +19,11 @@
 	</div>
 
 	<form method="get" action="admin.php" class="search-form">
-		<input type="hidden" value="<?php echo $page;?>" name="page"/>
+		<input type="hidden" value="<?php echo $page; ?>" name="page"/>
 		<p class="search-box">
-			<label for="s" class="screen-reader-text"><?php _e( 'Search Intrusions', 'tewp' ); ?></label>
+			<label for="s" class="screen-reader-text"><?php _e( 'Search Intrusions', 'wp-soc-lite' ); ?></label>
 			<input type="text" value="<?php echo esc_attr( $intrusions_search ); ?>" name="intrusions_search" id="mscr-intrusions-search-input"/>
-			<input type="submit" class="button" value="<?php _e( 'Search Intrusions', 'tewp' ); ?>"/>
+			<input type="submit" class="button" value="<?php _e( 'Search Intrusions', 'wp-soc-lite' ); ?>"/>
 		</p>
 	</form>
 
@@ -32,9 +32,9 @@
 		<div class="tablenav">
 			<div class="alignleft actions">
 				<select name="action">
-					<option selected="selected" value=""><?php _e( 'Bulk Actions', 'tewp' ); ?></option>
-					<option value="bulk_delete"><?php _e( 'Delete', 'tewp' ); ?></option>
-					<option value="bulk_exclude"><?php _e( 'Exclude', 'tewp' ); ?></option>
+					<option selected="selected" value=""><?php _e( 'Bulk Actions', 'wp-soc-lite' ); ?></option>
+					<option value="bulk_delete"><?php _e( 'Delete', 'wp-soc-lite' ); ?></option>
+					<option value="bulk_exclude"><?php _e( 'Exclude', 'wp-soc-lite' ); ?></option>
 				</select>
 				<input type="submit" class="button-secondary action" id="doaction" name="doaction" value="Apply"/>
 				<?php wp_nonce_field( 'mscr_action_intrusions_bulk' ); ?>
@@ -85,8 +85,8 @@
 ?>
 											<strong><a href="<?php echo $exclude_link; ?>" title="<?php echo esc_attr( sprintf( __( 'Exclude &#8220;%s&#8221;' ), $intrusion->type ) ); ?>"><?php echo esc_html( $intrusion->type ); ?></a></strong>
 											<div class="row-actions">
-												<span class="exclude"><a title="<?php echo esc_attr( __( 'Add this item to the exception fields list', 'tewp' ) ); ?>" href="<?php echo $exclude_link; ?>"><?php _e( 'Exclude', 'tewp' ); ?></a> | </span>
-												<span class="delete"><a title="<?php echo esc_attr( __( 'Delete this item', 'tewp' ) ); ?>" class="delete submitdelete" href="<?php echo $delete_link; ?>"><?php _e( 'Delete', 'tewp' ); ?></a></span>
+												<span class="exclude"><a title="<?php echo esc_attr( __( 'Add this item to the exception fields list', 'wp-soc-lite' ) ); ?>" href="<?php echo $exclude_link; ?>"><?php _e( 'Exclude', 'wp-soc-lite' ); ?></a> | </span>
+												<span class="delete"><a title="<?php echo esc_attr( __( 'Delete this item', 'wp-soc-lite' ) ); ?>" class="delete submitdelete" href="<?php echo $delete_link; ?>"><?php _e( 'Delete', 'wp-soc-lite' ); ?></a></span>
 											</div>
 <?php
 											break;
@@ -133,9 +133,9 @@
 
 			<div class="alignleft actions">
 				<select name="action2">
-					<option selected="selected" value=""><?php _e( 'Bulk Actions', 'tewp' ); ?></option>
-					<option value="bulk_delete"><?php _e( 'Delete', 'tewp' ); ?></option>
-					<option value="bulk_exclude"><?php _e( 'Exclude', 'tewp' ); ?></option>
+					<option selected="selected" value=""><?php _e( 'Bulk Actions', 'wp-soc-lite' ); ?></option>
+					<option value="bulk_delete"><?php _e( 'Delete', 'wp-soc-lite' ); ?></option>
+					<option value="bulk_exclude"><?php _e( 'Exclude', 'wp-soc-lite' ); ?></option>
 				</select>
 				<input type="submit" class="button-secondary action" id="doaction2" name="doaction2" value="Apply"/>
 			</div>
@@ -145,11 +145,11 @@
 
 	<?php elseif( ! $search_title ) : ?>
 
-	<p><?php _e( 'How good is that, no intrusions.', 'tewp' ); ?></p>
+	<p><?php _e( 'How good is that, no intrusions.', 'wp-soc-lite' ); ?></p>
 
 	<?php else : ?>
 
-	<p><?php _e( 'No intrusions found.', 'tewp' ); ?></p>
+	<p><?php _e( 'No intrusions found.', 'wp-soc-lite' ); ?></p>
 
 	<?php endif; ?>
 
@@ -157,7 +157,7 @@
 <script type='text/javascript'>
 jQuery(function(){
 	jQuery('.submitdelete').click(function() {
-		return confirm(<?php _e( '"You are about to permanently delete this item.\n  \'Cancel\' to stop, \'OK\' to delete."', 'tewp' ); ?>);
+		return confirm(<?php _e( '"You are about to permanently delete this item.\n  \'Cancel\' to stop, \'OK\' to delete."', 'wp-soc-lite' ); ?>);
 	});
 });
 </script>
