@@ -4,7 +4,7 @@
 	<div class="icon32" id="icon-options-general"><br /></div>
 	<h2><?php _e( 'threat Equation WP Settings', 'tewp' ); ?></h2>
 
-	<form action="admin.php" method="post">
+	<form action="" method="post">
 		
 
 		<h3><?php _e( 'General Settings', 'tewp' ); ?></h3>

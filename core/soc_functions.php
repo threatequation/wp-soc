@@ -7,7 +7,6 @@ function sl_config ($key = null ) {
     $default =  include_once( SL_PATH . '/core/config.php' );
 
     $saved = get_option( 'soc_lite_options', [] );
-
     $options = array_merge_recursive( $default , $saved );
 
     if ( $key ) {

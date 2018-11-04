@@ -46,7 +46,6 @@ if ( ! class_exists( 'wp_soc_lite' )
                 add_action( 'network_admin_notices', [$this, 'multisite_notice'] );
                 return;
             }
-
             $this->define_constant();
             $this->includes();
             $this->int_actions();
@@ -83,6 +82,7 @@ if ( ! class_exists( 'wp_soc_lite' )
          */
         private function define_constant() {
             $this->define( "SL_PATH", dirname( __FILE__ ) );
+            $this->define( "SL_BAIS_NAME", plugin_basename(__FILE__) );
             $this->define( "SL_DIR", __DIR__ );
             $this->define( "SL_INTRUSIONS_TABLE", "wpsl_intrusions" );
             $this->define( "SL_VERSION",  "1.0.1" );

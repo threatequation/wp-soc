@@ -20,11 +20,11 @@ class soc_admin {
      */
     public function __construct() {
 		
-		// add_action( 'admin_init', array( $this, 'admin_init' ) );
+		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 		// add_filter( 'screen_settings', array( $this, 'screen_settings' ), 10, 2 );
 		// add_filter( 'set-screen-option', array( $this, 'set_screen_option' ), 10, 3 );
-		// add_filter( 'plugin_action_links_tewp/tewp.php', array( $this, 'plugin_action_links' ) );
+		add_filter( 'plugin_action_links_'. SL_BAIS_NAME, array( $this, 'plugin_action_links' ) );
     }
     
      /**
@@ -38,212 +38,8 @@ class soc_admin {
         } else {
             return self::$instance = new self();
         }
-    }
+	}
 	
-
-	/**
-	 * Admin init
-	 *
-	 * @return void
-	 */
-	public function admin_init() {
-		// Are we on Threat Equation's intrusions page?
-		if ( MSCR_Utils::get( 'page' ) == 'mscr_intrusions' ) {
-			// Handle bulk actions
-			$this->do_action();
-
-			// Reset new instrusions badge for admin menu
-			// Must be called before register_setting, becuase it updates options
-			ThreatEquation::instance()->set_option( 'new_intrusions_count', 0 );
-			return;
-		}
-
-		// Add admin CSS
-		wp_enqueue_style( 'soc_styles', ThreatEquation::plugin_url() . 'css/mscr.css', array(), ThreatEquation::VERSION );
-
-		// Once a setting is registered updating options
-		// will run options_validate on every call to update_option
-		register_setting( 'mscr_options', 'mscr_options', array( $this, 'options_validate' ) );
-	}
-
-	/**
-	 * Perform an action based on the request
-	 *
-	 * @return void
-	 */
-	private function do_action() {
-		global $wpdb;
-		$sendback = remove_query_arg( array( 'intrusions' ), wp_get_referer() );
-
-		// Handle bulk actions
-		if ( isset( $_GET['doaction'] ) || isset( $_GET['doaction2'] ) ) {
-			check_admin_referer( 'mscr_action_intrusions_bulk' );
-
-			if ( ( $_GET['action'] != '' || $_GET['action2'] != '' ) && ( isset( $_GET['page'] ) && isset( $_GET['intrusions'] ) ) ) {
-				$intrusion_ids = $_GET['intrusions'];
-				$doaction = ( $_GET['action'] != '' ) ? $_GET['action'] : $_GET['action2'];
-			} else {
-				wp_redirect( admin_url( 'index.php?page=mscr_intrusions' ) );
-				exit;
-			}
-
-			switch ( $doaction ) {
-				case 'bulk_delete':
-					$deleted = 0;
-					foreach ( (array) $intrusion_ids as $intrusion_id ) {
-						if ( ! current_user_can( 'activate_plugins' ) )
-							wp_die( __( 'You are not allowed to delete this item.', 'wp-soc-lite' ) );
-
-						$sql    = $wpdb->prepare( 'DELETE FROM ' . $wpdb->tewp_intrusions . ' WHERE id = %d', $intrusion_id );
-						$result = $wpdb->query( $sql );
-
-						if ( ! $result ) {
-							wp_die( __( 'Error in deleting...', 'wp-soc-lite' ) );
-						}
-						$deleted++;
-					}
-					$sendback = add_query_arg( 'deleted', $deleted, $sendback );
-					break;
-
-				case 'bulk_exclude':
-					$excluded = 0;
-					foreach ( (array) $intrusion_ids as $intrusion_id ) {
-						if ( ! current_user_can( 'activate_plugins' ) ) {
-							wp_die( __( 'You are not allowed to exclude this item.', 'wp-soc-lite' ) );
-						}
-
-						// Get the intrusion field to exclude
-						$sql    = $wpdb->prepare( "SELECT name FROM {$wpdb->tewp_intrusions} WHERE id = %d", $intrusion_id );
-						$result = $wpdb->get_row( $sql );
-
-						if ( ! $result ) {
-							wp_die( __( 'Error in excluding...', 'wp-soc-lite' ) );
-						}
-
-						$mscr = ThreatEquation::instance();
-						$exceptions = $mscr->get_option( 'exception_fields' );
-
-						// Only add the field once
-						if ( ! in_array( $result->name, $exceptions ) ) {
-							$exceptions[] = $result->name;
-						}
-
-						$mscr->set_option( 'exception_fields', $exceptions );
-						$excluded++;
-					}
-					$sendback = add_query_arg( 'excluded', $excluded, $sendback );
-					break;
-			}
-
-			if ( isset( $_GET['action'] ) ) {
-				$sendback = remove_query_arg( array( 'action', 'action2', 'intrusions' ), $sendback );
-			}
-
-			wp_redirect( $sendback );
-			exit;
-		} else if ( ! empty( $_GET['_wp_http_referer'] ) ) {
-			wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce' ), stripslashes( $_SERVER['REQUEST_URI'] ) ) );
-			exit;
-		}
-
-		// Handle other actions
-		$action = MSCR_Utils::get( 'action' );
-		$id     = (int) MSCR_Utils::get( 'intrusion' );
-
-		if ( ! $action )
-			return;
-
-		switch ( $action ) {
-			case 'exclude':
-				check_admin_referer( 'mscr_action_exclude_intrusion' );
-				if ( ! current_user_can( 'activate_plugins' ) )
-					wp_die( __( 'You are not allowed to exclude this item.', 'wp-soc-lite' ) );
-
-				// Get the intrusion field to exclude
-				$sql    = $wpdb->prepare( "SELECT name FROM {$wpdb->tewp_intrusions} WHERE id = %d", $id );
-				$result = $wpdb->get_row( $sql );
-
-				if ( ! $result ) {
-					wp_die( __( 'Error in excluding...', 'wp-soc-lite' ) );
-				}
-
-				$mscr = ThreatEquation::instance();
-				$exceptions = $mscr->get_option( 'exception_fields' );
-
-				// Only add the field once
-				if ( ! in_array( $result->name, $exceptions ) ) {
-					$exceptions[] = $result->name;
-				}
-
-				$mscr->set_option( 'exception_fields', $exceptions );
-				$sendback = add_query_arg( 'excluded', $id, $sendback );
-				break;
-
-			case 'delete':
-				check_admin_referer( 'mscr_action_delete_intrusion' );
-				if ( ! current_user_can( 'activate_plugins' ) )
-					wp_die( __( 'You are not allowed to delete this item.', 'wp-soc-lite' ) );
-
-				$sql    = $wpdb->prepare( 'DELETE FROM ' . $wpdb->tewp_intrusions . ' WHERE id = %d', $id );
-				$result = $wpdb->query( $sql );
-
-				if ( ! $result ) {
-					wp_die( __( 'Error in deleting...', 'wp-soc-lite' ) );
-				}
-
-				$sendback = add_query_arg( 'deleted', 1, $sendback );
-				break;
-		}
-
-		wp_redirect( $sendback );
-		exit;
-	}
-
-	/**
-	 * Add custom screen options & help to a plugin page
-	 *
-	 * @param string
-	 * @param object
-	 * @return string
-	 */
-	public function screen_settings( $action, $screen_object ) {
-		if ( $screen_object->id == 'dashboard_page_mscr_intrusions' ) {
-			// Add screen options to the intrusions list page
-			$per_page = MSCR_Utils::mscr_intrusions_per_page();
-			$data['per_page'] = $per_page;
-			$action = MSCR_Utils::view( 'admin_intrusions_screen_options', $data, true );
-
-			// Are we on WordPress 3.1 or higher?
-			if ( function_exists( 'get_current_screen' ) ) {
-				return $action;
-			}
-
-			// Legacy support for contextual help on the intrusions page for WordPress 3.0
-			add_contextual_help( $screen_object->id, $this->get_contextual_help() );
-		}
-
-		return $action;
-	}
-
-	/**
-	 * Update the current user's screen options
-	 *
-	 * @return mixed
-	 */
-	public function set_screen_option( $flag, $option, $value ) {
-		switch ( $option ) {
-			case 'mscr_intrusions_per_page':
-				$value = absint( $value );
-				if ( $value < 1 ) {
-					return false;
-				}
-
-				return $value;
-		}
-
-		return $flag;
-	}
-
 	/**
 	 * Add admin menu items
 	 *
@@ -260,12 +56,207 @@ class soc_admin {
 	        'Options',
 	        'Options',
 	        'activate_plugins',
-	        'options',
+	        'soc_options',
 	        array( $this, 'options' )
 	    );
 	}
+	
 
+	/**
+	 * Admin init
+	 *
+	 * @return void
+	 */
+	public function admin_init() {
+		
+		// Are we on Threat Equation's intrusions page?
+		if ( isset($_GET['page']) && $_GET['page'] == 'soc_options' ) {
+			$options = $this->options_validate( $_POST );
+			update_option( 'soc_lite_options', $options );
+		}
 
+		// // Add admin CSS
+		// wp_enqueue_style( 'soc_styles', ThreatEquation::plugin_url() . 'css/mscr.css', array(), ThreatEquation::VERSION );
+
+	}
+
+	// /**
+	//  * Perform an action based on the request
+	//  *
+	//  * @return void
+	//  */
+	// private function do_action() {
+	// 	global $wpdb;
+	// 	$sendback = remove_query_arg( array( 'intrusions' ), wp_get_referer() );
+
+	// 	// Handle bulk actions
+	// 	if ( isset( $_GET['doaction'] ) || isset( $_GET['doaction2'] ) ) {
+	// 		check_admin_referer( 'mscr_action_intrusions_bulk' );
+
+	// 		if ( ( $_GET['action'] != '' || $_GET['action2'] != '' ) && ( isset( $_GET['page'] ) && isset( $_GET['intrusions'] ) ) ) {
+	// 			$intrusion_ids = $_GET['intrusions'];
+	// 			$doaction = ( $_GET['action'] != '' ) ? $_GET['action'] : $_GET['action2'];
+	// 		} else {
+	// 			wp_redirect( admin_url( 'index.php?page=mscr_intrusions' ) );
+	// 			exit;
+	// 		}
+
+	// 		switch ( $doaction ) {
+	// 			case 'bulk_delete':
+	// 				$deleted = 0;
+	// 				foreach ( (array) $intrusion_ids as $intrusion_id ) {
+	// 					if ( ! current_user_can( 'activate_plugins' ) )
+	// 						wp_die( __( 'You are not allowed to delete this item.', 'wp-soc-lite' ) );
+
+	// 					$sql    = $wpdb->prepare( 'DELETE FROM ' . $wpdb->tewp_intrusions . ' WHERE id = %d', $intrusion_id );
+	// 					$result = $wpdb->query( $sql );
+
+	// 					if ( ! $result ) {
+	// 						wp_die( __( 'Error in deleting...', 'wp-soc-lite' ) );
+	// 					}
+	// 					$deleted++;
+	// 				}
+	// 				$sendback = add_query_arg( 'deleted', $deleted, $sendback );
+	// 				break;
+
+	// 			case 'bulk_exclude':
+	// 				$excluded = 0;
+	// 				foreach ( (array) $intrusion_ids as $intrusion_id ) {
+	// 					if ( ! current_user_can( 'activate_plugins' ) ) {
+	// 						wp_die( __( 'You are not allowed to exclude this item.', 'wp-soc-lite' ) );
+	// 					}
+
+	// 					// Get the intrusion field to exclude
+	// 					$sql    = $wpdb->prepare( "SELECT name FROM {$wpdb->tewp_intrusions} WHERE id = %d", $intrusion_id );
+	// 					$result = $wpdb->get_row( $sql );
+
+	// 					if ( ! $result ) {
+	// 						wp_die( __( 'Error in excluding...', 'wp-soc-lite' ) );
+	// 					}
+
+	// 					$mscr = ThreatEquation::instance();
+	// 					$exceptions = $mscr->get_option( 'exception_fields' );
+
+	// 					// Only add the field once
+	// 					if ( ! in_array( $result->name, $exceptions ) ) {
+	// 						$exceptions[] = $result->name;
+	// 					}
+
+	// 					$mscr->set_option( 'exception_fields', $exceptions );
+	// 					$excluded++;
+	// 				}
+	// 				$sendback = add_query_arg( 'excluded', $excluded, $sendback );
+	// 				break;
+	// 		}
+
+	// 		if ( isset( $_GET['action'] ) ) {
+	// 			$sendback = remove_query_arg( array( 'action', 'action2', 'intrusions' ), $sendback );
+	// 		}
+
+	// 		wp_redirect( $sendback );
+	// 		exit;
+	// 	} else if ( ! empty( $_GET['_wp_http_referer'] ) ) {
+	// 		wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce' ), stripslashes( $_SERVER['REQUEST_URI'] ) ) );
+	// 		exit;
+	// 	}
+
+	// 	// Handle other actions
+	// 	$action = MSCR_Utils::get( 'action' );
+	// 	$id     = (int) MSCR_Utils::get( 'intrusion' );
+
+	// 	if ( ! $action )
+	// 		return;
+
+	// 	switch ( $action ) {
+	// 		case 'exclude':
+	// 			check_admin_referer( 'mscr_action_exclude_intrusion' );
+	// 			if ( ! current_user_can( 'activate_plugins' ) )
+	// 				wp_die( __( 'You are not allowed to exclude this item.', 'wp-soc-lite' ) );
+
+	// 			// Get the intrusion field to exclude
+	// 			$sql    = $wpdb->prepare( "SELECT name FROM {$wpdb->tewp_intrusions} WHERE id = %d", $id );
+	// 			$result = $wpdb->get_row( $sql );
+
+	// 			if ( ! $result ) {
+	// 				wp_die( __( 'Error in excluding...', 'wp-soc-lite' ) );
+	// 			}
+
+	// 			$mscr = ThreatEquation::instance();
+	// 			$exceptions = $mscr->get_option( 'exception_fields' );
+
+	// 			// Only add the field once
+	// 			if ( ! in_array( $result->name, $exceptions ) ) {
+	// 				$exceptions[] = $result->name;
+	// 			}
+
+	// 			$mscr->set_option( 'exception_fields', $exceptions );
+	// 			$sendback = add_query_arg( 'excluded', $id, $sendback );
+	// 			break;
+
+	// 		case 'delete':
+	// 			check_admin_referer( 'mscr_action_delete_intrusion' );
+	// 			if ( ! current_user_can( 'activate_plugins' ) )
+	// 				wp_die( __( 'You are not allowed to delete this item.', 'wp-soc-lite' ) );
+
+	// 			$sql    = $wpdb->prepare( 'DELETE FROM ' . $wpdb->tewp_intrusions . ' WHERE id = %d', $id );
+	// 			$result = $wpdb->query( $sql );
+
+	// 			if ( ! $result ) {
+	// 				wp_die( __( 'Error in deleting...', 'wp-soc-lite' ) );
+	// 			}
+
+	// 			$sendback = add_query_arg( 'deleted', 1, $sendback );
+	// 			break;
+	// 	}
+
+	// 	wp_redirect( $sendback );
+	// 	exit;
+	// }
+
+	/**
+	 * Add custom screen options & help to a plugin page
+	 *
+	 * @param string
+	 * @param object
+	 * @return string
+	 */
+	// public function screen_settings( $action, $screen_object ) {
+	// 	if ( $screen_object->id == 'dashboard_page_mscr_intrusions' ) {
+	// 		// Add screen options to the intrusions list page
+	// 		$per_page = MSCR_Utils::mscr_intrusions_per_page();
+	// 		$data['per_page'] = $per_page;
+	// 		$action = MSCR_Utils::view( 'admin_intrusions_screen_options', $data, true );
+
+	// 		// Are we on WordPress 3.1 or higher?
+	// 		if ( function_exists( 'get_current_screen' ) ) {
+	// 			return $action;
+	// 		}
+
+	// 		// Legacy support for contextual help on the intrusions page for WordPress 3.0
+	// 		add_contextual_help( $screen_object->id, $this->get_contextual_help() );
+	// 	}
+
+	// 	return $action;
+	// }
+
+	/**
+	 * Update the current user's screen options
+	 *
+	 * @return mixed
+	 */
+	// public function set_screen_option( $flag, $option, $value ) {
+	// 	switch ( $option ) {
+	// 		case 'mscr_intrusions_per_page':
+	// 			$value = absint( $value );
+	// 			if ( $value < 1 ) {
+	// 				return false;
+	// 			}
+
+	// 			return $value;
+	// 	}
+
+	// 	return $flag;
+	// }
 
 	/**
 	 * Add link to settings on the plugins page
@@ -274,13 +265,9 @@ class soc_admin {
 	 * @return array
 	 */
 	public function plugin_action_links( $actions ) {
-		$mscr_actions['settings'] = '<a href="'.admin_url( 'options-general.php?page=mscr_options' ).'">Settings</a>';
-
-		foreach ( $actions as $key => $val ) {
-			$mscr_actions[$key] = $val;
-		}
-
-		return $mscr_actions;
+		$actions['settings'] = '<a href="'.admin_url( 'admin.php?page=soc_options' ).'">Settings</a>';
+		$actions['threatequation'] = '<a href="https://www.threatequation.com/" target="_blank" style="color:red;">ThreatEquation</a>';
+		return $actions;
 	}
 	
 
@@ -362,13 +349,46 @@ class soc_admin {
 		soc_utils::view( 'admin_intrusions', $data );
 	}
 
+
+
 	/**
+	 * Display options page
+	 *
+	 * @return void
+	 */
+	public function options() {
+		
+		$options = sl_config();
+
+
+
+		// Prep exception data
+		$options['exception_fields'] = implode( "\r\n", $options['exception_fields'] );
+		$options['html_fields'] = implode( "\r\n", $options['html_fields'] );
+		$options['json_fields'] = implode( "\r\n", $options['json_fields'] );
+
+		// Apply textarea escaping, backwards compat for WordPress 3.0
+		if ( function_exists( 'esc_textarea' ) ) {
+			$options['exception_fields'] = esc_textarea( $options['exception_fields'] );
+			$options['html_fields'] = esc_textarea( $options['html_fields'] );
+			$options['json_fields'] = esc_textarea( $options['json_fields'] );
+		} else {
+			$options['exception_fields'] = esc_html( $options['exception_fields'] );
+			$options['html_fields'] = esc_html( $options['html_fields'] );
+			$options['json_fields'] = esc_html( $options['json_fields'] );
+		}
+
+		soc_utils::view( 'admin_options', $options );
+	}
+
+
+		/**
 	 * Validate options
 	 *
 	 * @return array
 	 */
 	public function options_validate( $input = array() ) {
-		$options = get_option( 'mscr_options' );
+		$options = sl_config();
 
 		foreach ( array( 'email', 'email_threshold', 'exception_fields', 'html_fields', 'json_fields' ) as $key ) {
 			if ( ! isset( $input[$key] ) ) {
@@ -417,12 +437,7 @@ class soc_admin {
 		$options['email_notifications']      = isset( $input['email_notifications'] ) ? 1 : 0;
 		$options['enable_admin']             = isset( $input['enable_admin'] ) ? 1 : 0;
 		$options['enable_intrusion_logs']    = isset( $input['enable_intrusion_logs'] ) ? 1 : 0;
-		$options['enable_automatic_updates'] = isset( $input['enable_automatic_updates'] ) ? 1 : 0;
 
-		// Clear the update cache
-		if ( 0 == $options['enable_automatic_updates'] ) {
-			delete_site_transient( 'mscr_update' );
-		}
 
 		// Banning
 		$options['ban_enabled'] = isset( $input['ban_enabled'] ) ? 1 : 0;
@@ -431,35 +446,5 @@ class soc_admin {
 		$options['ban_time'] = isset( $input['ban_time'] ) ? absint( $input['ban_time'] ): 10;
 
 		return $options;
-	}
-
-	/**
-	 * Display options page
-	 *
-	 * @return void
-	 */
-	public function options() {
-		
-		$options = sl_config();
-
-
-
-		// Prep exception data
-		$options['exception_fields'] = implode( "\r\n", $options['exception_fields'] );
-		$options['html_fields'] = implode( "\r\n", $options['html_fields'] );
-		$options['json_fields'] = implode( "\r\n", $options['json_fields'] );
-
-		// Apply textarea escaping, backwards compat for WordPress 3.0
-		if ( function_exists( 'esc_textarea' ) ) {
-			$options['exception_fields'] = esc_textarea( $options['exception_fields'] );
-			$options['html_fields'] = esc_textarea( $options['html_fields'] );
-			$options['json_fields'] = esc_textarea( $options['json_fields'] );
-		} else {
-			$options['exception_fields'] = esc_html( $options['exception_fields'] );
-			$options['html_fields'] = esc_html( $options['html_fields'] );
-			$options['json_fields'] = esc_html( $options['json_fields'] );
-		}
-
-		soc_utils::view( 'admin_options', $options );
 	}
 }
