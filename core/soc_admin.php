@@ -70,9 +70,10 @@ class soc_admin {
 	public function admin_init() {
 		
 		// Are we on Threat Equation's intrusions page?
-		if ( isset($_GET['page']) && $_GET['page'] == 'soc_options' ) {
+		if ( isset($_GET['page']) && $_GET['page'] == 'soc_options') {
+			
 			$options = $this->options_validate( $_POST );
-			update_option( 'soc_lite_options', $options );
+			
 		}
 
 		// // Add admin CSS
@@ -345,7 +346,6 @@ class soc_admin {
 
 		if ( $excluded )
 			$data['message'] = sprintf( _n( 'Item added to the exceptions list.', '%s items added to the exceptions list.', $excluded, 'wp-soc-lite' ), number_format_i18n( $excluded ) );
-
 		soc_utils::view( 'admin_intrusions', $data );
 	}
 
@@ -359,7 +359,6 @@ class soc_admin {
 	public function options() {
 		
 		$options = sl_config();
-
 
 
 		// Prep exception data
@@ -378,6 +377,7 @@ class soc_admin {
 			$options['json_fields'] = esc_html( $options['json_fields'] );
 		}
 
+
 		soc_utils::view( 'admin_options', $options );
 	}
 
@@ -388,6 +388,19 @@ class soc_admin {
 	 * @return array
 	 */
 	public function options_validate( $input = array() ) {
+		
+		if ( ! isset( $input['submit'] ) ) {
+			return;
+		}
+
+
+
+		if ( ! wp_verify_nonce( $input['_wpnonce'], 'soc_options-options' ) ) {
+     		die( 'Security check' );
+     	}
+
+		$input = $input['sl_options'];
+
 		$options = sl_config();
 
 		foreach ( array( 'email', 'email_threshold', 'exception_fields', 'html_fields', 'json_fields' ) as $key ) {
@@ -445,6 +458,8 @@ class soc_admin {
 		$options['attack_repeat_limit'] = isset($input['attack_repeat_limit'])? absint( $input['attack_repeat_limit'] ) : 20;
 		$options['ban_time'] = isset( $input['ban_time'] ) ? absint( $input['ban_time'] ): 10;
 
+		update_option( 'soc_lite_options', $options );
+		
 		return $options;
 	}
 }

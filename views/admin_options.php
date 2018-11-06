@@ -6,8 +6,9 @@
 
 	<form action="" method="post">
 		
-
+		<?php settings_fields('soc_options'); ?>
 		<h3><?php _e( 'General Settings', 'tewp' ); ?></h3>
+
 		<table class="form-table">
 			<tbody>
 				<tr valign="top">
@@ -232,8 +233,6 @@
 			</tbody>
 		</table>
 
-		<p class="submit">
-			<input type="submit" value="<?php esc_attr_e( 'Save Changes', 'tewp' ); ?>" class="button-primary" name="Submit">
-		</p>
+		<?php submit_button(); ?>
 	</form>
 </div>

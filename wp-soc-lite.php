@@ -69,7 +69,7 @@ if ( ! class_exists( 'wp_soc_lite' )
          * Define methods for global constant
          *  @return null;
          */
-        public function define( String $var, $val) {
+        public function define( $var, $val) {
             if ( ! defined($var) ) {
                 define( $var, $val );
             }
