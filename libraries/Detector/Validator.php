@@ -17,19 +17,15 @@ class Validator
 
         $this->filterCollection = $filterCollection;
         $this->request = $request;
-        if( !Config::isVerified() ){
-            return false;
-        }
-
         return $this; 
     }
 
     public function run(){
         $filter= array();
         foreach ($this->request as $key => $value) {
-            $filter[]= $this->iterate($key, $value);
+            $this->iterate($key, $value);
         }
-        return $filter;
+       
     }
 
     private function iterate($key, $value)
@@ -40,15 +36,19 @@ class Validator
                 $this->iterate("$key.$subKey", $subValue);
             }
         } elseif (is_string($value)) {
-            
-            $value = $this->converter($value);
-            $filter = $this->detect($key, $value);
-            if ($filter) {
-                $this->addEvent($key, $value, $filter);
-            }
 
-            $value = $this->urfValidation($key, $value);
-            $value = $this->IDOR($key, $value);
+            // if ($this->is_clean($value)) {
+            //     return;
+            // }
+            
+            // $value = $this->converter($value);
+
+            $filter = $this->detect( $key, $value );
+            
+            // if ($filter) {
+            //     $this->addEvent($key, $value, $filter);
+            // }
+
             //Protect::init()->run($key, $value, $filter);
         }
         return $filter;
@@ -71,16 +71,17 @@ class Validator
         if (!$value || !preg_match($preFilter, $value)) {
             return array();
         }
-
-         // check if this field is part of the exceptions
-        if(sizeof( Config::getConfig('exceptions')) > 0){
-            foreach ( Config::getConfig('exceptions') as $exception) {
+        
+        //  check if this field is part of the exceptions
+        $exception_fields = sl_config('exception_fields');
+        if ( sizeof( $exception_fields ) > 0) {
+            foreach ( $exception_fields as $exception ) {
                $matches = array();
                if (($exception === $key) || preg_match('((/.*/[^eE]*)$)', $exception, $matches) && isset($matches[1]) && preg_match($matches[1], $key)) {
                    return array();
                }
             }
-         }
+        }
 
         $filters = $this->filterCollection;
         $filterSet = null;
@@ -94,7 +95,6 @@ class Validator
                 $filterSet[] = $filter;
             }
         }
-         
         return $filterSet;
     }
 
@@ -131,7 +131,7 @@ class Validator
     {
         $tag = array();
         $cwe = [];
-        $dis =[];
+        $dis = [];
         $impact = 0;
         foreach ($filters as $filter) {
             $tags = $filter->getTags();
@@ -173,109 +173,15 @@ class Validator
                 ),
             )
         );
-     }
-
+    }
     /**
-    * unavialble redirect and forword validation.
-    *
-    * @param $key
-    *
-    * @return $repost
-    */
-    private function urfValidation($key, $value) {
-
-        $regex = "((https?|ftp)://)?([a-z0-9+!*(),;?&=$._-]+(:[a-z0-9+!*(),;?&=$._-]+)?@)?([a-z0-9-.]*)\.([a-z]{2,4})(:[0-9]{2,5})?(/([a-z0-9+$%_-]\.?)+)*/?(\?[a-z+&$._-][a-z0-9;:@&%=+/$._-]*)?(#[a-z_.-][a-z0-9+$%_.-]*)?"; 
-
-        if(preg_match("~^$regex$~i", $value)){
-            Report::init()->addEvent(
-                array(
-                    'attack_type'    => "URF",
-                    'risk'           => 'medium',
-                    'cwe'            => '227',
-                    'defence_method' => 'Validation',
-                    'description'    => '',
-                    'method'         => $_SERVER['REQUEST_METHOD'],
-                    'url'            => $_SERVER['PHP_SELF'],
-                    'queryString'    => $_SERVER['QUERY_STRING'],
-                    'stacktrace'     => array_map(
-                        function($value3){
-                            return [
-                                'file'        => $value3['file'],
-                                'line'        => $value3['line'],
-                                'in_function' => $value3['function'],
-                                'class'       => isset($value3['class']) ? $value3['class'] : null
-                            ];
-                        }, debug_backtrace(false)
-                    ),
-                )
-            );
-        return urlencode($value);
-        }
-
-        $urfkey = Config::getConfig('url_redirect_key');
-        $key = explode('.', $key);
-
-        if(in_array($key[1], $urfkey)){
-
-            Report::init()->addEvent(
-                array(
-                    'attack_type'    =>'URF',
-                    'risk'           => 'medium',
-                    'cwe'            => '227',
-                    'defence_method' => 'Validation',
-                    'description'    => '',
-                    'method'         => $_SERVER['REQUEST_METHOD'],
-                    'url'            => $_SERVER['PHP_SELF'],
-                    'queryString'    => $_SERVER['QUERY_STRING'],
-                    'stacktrace'     => array_map(
-                        function($value3){
-                            return [
-                                'file'        => $value3['file'],
-                                'line'        => $value3['line'],
-                                'in_function' => $value3['function'],
-                                'class'       => isset($value3['class']) ? $value3['class'] : null
-                            ];
-                        }, debug_backtrace(false)
-                    ),
-                )
-            );
-            return urlencode($value);
-        }
-        return $value;
+     * Check input string is clean
+     * 
+     * @return Boolean;
+     */
+    function is_clean($string) {
+        return ! preg_match("/[^a-z\d_-| ]/i", $string);
     }
 
-    private function IDOR($keys, $value){
-        $keys = explode('.', $keys);
-        $key= $keys[1];
-
-        if(!empty($_SESSION[$key]) && $key !== "csrf_token"){
-            if($_SESSION[$key] !== $value){
-                Report::init()->addEvent(
-                    array(
-                        'attack_type'=>'IDOR',
-                        'risk' => 'high',
-                        'method'  => $_SERVER['REQUEST_METHOD'],
-                        'url' => $_SERVER['PHP_SELF'],
-                        'queryString' => $_SERVER['QUERY_STRING'],
-                        'stacktrace' => array_map(
-                            function($value3){
-                                return [
-                                    'file'=>$value3['file'],
-                                    'line'=>$value3['line'],
-                                    'in_function'=>$value3['function'],
-                                    'class'=>$value3['class']
-                                ];
-                            }, debug_backtrace(false)
-                        ),
-                    )
-                );
-                //session_destroy();
-                //header('Location: /');
-                //exit;
-                return "";
-            }
-        }
-        return $value;
-    }
-
+   
 }

@@ -11,9 +11,6 @@ class Protect
 
     public function __construct(){
 
-        if( Config::isVerified() ){
-            return $this;
-        }
     }
 
     public static function init() {
@@ -116,9 +113,6 @@ class Protect
      */
     public function rewriteMethod( $key, $value )
     {
-        if( !Config::isVerified() ) {
-            return false;
-        }
         $key = explode('.', $key);
 
         if ($key[0] === 'POST') {
@@ -131,24 +125,4 @@ class Protect
             $_COOKIE[$key[1]] = $value;
         }
     }
-
-
-
-    /**
-     *function for rewrite Request Metod.
-     *
-     * @param $key string key after validate
-     * @param $value string value after validation
-     */
-    public function rewriteLaravelMethod( $key, $value )
-    {
-        
-        $input = Request()->all();
-        $input[$key] = $value;
-
-        Request()->replace($input);
-
-    }
-
-    /* @End class*/
 }
