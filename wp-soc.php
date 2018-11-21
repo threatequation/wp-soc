@@ -1,31 +1,32 @@
-<?php  if ( ! defined( 'ABSPATH' ) ) exit;
-
+<?php  
 /**
- * @package ThreatEquation
- * @version 0.0.1
- */
-/**
-*	Plugin Name: wp soc lite
+*	Plugin Name: WP SOC
 *	Plugin URI: https://threatequation.com/
-*	Description: 
+*	Description: WP SOC generate Security Audit Log a security alert for everything that happens on your WordPress websites. Use the Audit Log Viewer included in the plugin to get all the security alerts. Identify WordPress security issues before they become a problem. 
 *	Author: threatEquation
-*	Version: 1.0.0.
+*	Version: 0.1
 *	Author URI: https://threatequation.com/
-*	Text Domain: wp-soc-lite
-* 	Domain Path: /languages/
+*	Text Domain: wp-soc
+* 	Domain Path: /languages
+*   License: GPL2
+*   License URI: https://www.gnu.org/licenses/gpl-2.0.html
 */
 
+
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 /**
- * Threat Equation
+ * @package WP SOC LITE
+ * @version 0.0.1
  */
 
-if ( ! class_exists( 'wp_soc_lite' ) 
+if ( ! class_exists( 'WP_SOC' ) 
     && version_compare( PHP_VERSION, '5.6', '>=' ) ) :
 
 
 require __DIR__.'/vendor/autoload.php';
     
-class wp_soc_lite {
+class WP_SOC {
 
 
     /**
@@ -61,10 +62,10 @@ class wp_soc_lite {
      * @return object
      */
     public static function instance() {
-        if ( self::$instance  instanceof  wp_soc_lite ){
+        if ( self::$instance  instanceof  WP_SOC ){
             return self::$instance;
         } else {
-            return self::$instance = new wp_soc_lite();
+            return self::$instance = new WP_SOC();
         }
     }
 
@@ -87,8 +88,9 @@ class wp_soc_lite {
         $this->define( "SL_PATH", dirname( __FILE__ ) );
         $this->define( "SL_BAIS_NAME", plugin_basename(__FILE__) );
         $this->define( "SL_DIR", __DIR__ );
+        $this->define( "SL_URI", plugin_dir_url( __FILE__ ) );
         $this->define( "SL_INTRUSIONS_TABLE", "wpsl_intrusions" );
-        $this->define( "SL_VERSION",  "1.0.1" );
+        $this->define( "SL_VERSION",  "0.1" );
         $this->define( "SL_DB_VERSION", "0.1" );
         $this->define( "SL_POST_TYPE", "wpsl" );
     }
@@ -114,8 +116,8 @@ class wp_soc_lite {
         // Register activation, deactivation and uninstall hooks,
         // run Threat Equation on init
         register_activation_hook( __FILE__, ['soc_activate', 'activate'] );
-        // register_deactivation_hook( __FILE__, 'wp_soc_lite::deactivate' );
-        // register_uninstall_hook( __FILE__, 'wp_soc_lite::uninstall' );
+        // register_deactivation_hook( __FILE__, 'WP_SOC::deactivate' );
+        // register_uninstall_hook( __FILE__, 'WP_SOC::uninstall' );
 
         add_action( 'plugins_loaded',  [ $this, 'init' ] );
     }
@@ -139,7 +141,7 @@ class wp_soc_lite {
      * @return void
      */
     public function multisite_notice() {
-        echo '<div class="update-nag">' . __( 'multisite install currently not supported.', 'wp-soc-lite' ) . '</div>';
+        echo '<div class="update-nag">' . __( 'multisite install currently not supported.', 'wp-soc' ) . '</div>';
     }
 
 }
@@ -147,10 +149,10 @@ class wp_soc_lite {
 
 
 
-function wp_soc_lite () {
-    return wp_soc_lite::instance();
+function wp_soc () {
+    return WP_SOC::instance();
 }
 
-wp_soc_lite();
+wp_soc();
 
 endif;

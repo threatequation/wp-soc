@@ -360,6 +360,8 @@ class soc_admin {
 		
 		$options = sl_config();
 
+		wp_enqueue_script('soc-options', SL_URI. '/assest/js/options.js', ['jquery'], SL_VERSION, true );
+
 
 		// Prep exception data
 		$options['exception_fields'] = implode( "\r\n", $options['exception_fields'] );
@@ -377,6 +379,7 @@ class soc_admin {
 			$options['json_fields'] = esc_html( $options['json_fields'] );
 		}
 
+		$options['telog'] = isset($options['telog'])? (boolean) $options['json_fields'] : false;
 
 		soc_utils::view( 'admin_options', $options );
 	}
