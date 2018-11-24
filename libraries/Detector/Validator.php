@@ -45,9 +45,9 @@ class Validator
 
             $filter = $this->detect( $key, $value );
             
-            // if ($filter) {
-            //     $this->addEvent($key, $value, $filter);
-            // }
+            if ($filter) {
+                $this->addEvent($key, $value, $filter);
+            }
 
             //Protect::init()->run($key, $value, $filter);
         }
@@ -153,14 +153,14 @@ class Validator
         }
         Report::init()->addEvent(
             array(
-                'attack_type'    =>strtoupper($tag[0]),
+                'attack_type'    => strtoupper( $tag[0] ),
                 'risk'           => $risk,
-                'cwe'            => implode(',', $cwe),
+                'cwe'            => implode( ',', $cwe ),
                 'defence_method' => 'Validation',
                 'method'         => $_SERVER['REQUEST_METHOD'],
                 'url'            => $_SERVER['PHP_SELF'],
                 'queryString'    => $_SERVER['QUERY_STRING'],
-                'description'    => implode('.', $dis),
+                'description'    => implode( '.', $dis ),
                 'stacktrace'     => array_map(
                     function($value3){
                         return [
@@ -179,8 +179,8 @@ class Validator
      * 
      * @return Boolean;
      */
-    function is_clean($string) {
-        return ! preg_match("/[^a-z\d_-| ]/i", $string);
+    function is_clean ( $string ) {
+        return ! preg_match( "/[^a-z\d_-| ]/i", $string );
     }
 
    

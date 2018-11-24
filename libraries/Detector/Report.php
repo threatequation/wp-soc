@@ -31,8 +31,6 @@ class Report
     public function addEvent(array $event)
     {
         $this->events[] = $event;
-        $this->sendLog($event);
-        $this->createLog($event);
     }
 
    /**
@@ -133,7 +131,7 @@ class Report
           }
           
       }
-      $dataString = sprintf($format,
+      $dataString = sprintf( $format,
                             $timestamp,
                             trim($attackedParameters),
                             $user_agent,
@@ -144,67 +142,43 @@ class Report
   }
 
   /**
-   *read log file.
-   *
-   * @return string or exceptipn
-   */
-  public function readLog()
-  {
-    $log_file = Config::getConfig('cache').'/log.log';
-
-      if (is_writable($log_file) && file_exists($log_file)) {
-          if ($file = file($log_file)) {
-              $string = '';
-              foreach ($file as $line_number => $line) {
-                  $data_aray = explode('|', $line);
-                  $string .= "<div id=\"log\">\n<strong>timestamp:</strong> {$data_aray[0]}<br />\n<strong>Data:</strong>".htmlspecialchars($data_aray[1], ENT_QUOTES)."<br />\n<strong>User Agent: </strong>{$data_aray[2]}</br><strong>IP:</strong> {$data_aray[3]}</br></br></div>";
-              }
-
-              return $string;
-          } else {
-              return 'Log file is empty';
-          }
-      } else {
-          throw new \Exception(
-            'Please make sure that '.$this->logfile.' is writeable.'
-        );
-      }
-  }
-  /**
    * send data report to database.
    */
-    private function sendLog($event) {
-        if( !Config::isVerified()){
-            return false;
-        }
-
+    public  function getEventsData() {
 
       if (isset($_SERVER['HTTP_USER_AGENT'])) {
             $user_agent = $_SERVER['HTTP_USER_AGENT'];
         }
 
         $timestamp = gmdate('Y-m-d H:i:s.u', time());
+        $Eventdata = [];
 
-        $data= array(
-                "timestamp"   => $timestamp,
-                "product_id"  => Config::getConfig('product_id'),
-                "plugin_type" => Config::getConfig('ApplicationName'),
-                "attack_type" => $event['attack_type'],
-                "risk"        => $event['risk'],
-                "attack_data" => json_encode(array(
-                    "cwe"             => $event['cwe'],
-                    "description"     => $event['description'],
-                    "defence_method"  => $event['defence_method'],
-                    "queryString"     => $event['queryString'],
-                    "risk"            => $event['risk'],
-                    "url"             => $event['url'],
-                    "method"          => $event["method"],
-                    "stacktrace"      => $event['stacktrace']
-                )),
-                "user_agent"  => $user_agent,
-                "attacker_ip" => self::getIP()
-            );
-        do_action( 'te_event_log', $data );
-        return Send::curl('/attack_log/', $data);
+        if ( ! $this->isEmpty() ) {
+            foreach ( (array) $this->getEvents() as $event ) {
+                $Eventdata[] = [
+                    "timestamp"   => $timestamp,
+                    "product_id"  => Config::getConfig('product_id'),
+                    "plugin_type" => Config::getConfig('ApplicationName'),
+                    "attack_type" => $event['attack_type'],
+                    "risk"        => $event['risk'],
+                    "attack_data" => json_encode(array(
+                        "cwe"             => $event['cwe'],
+                        "description"     => $event['description'],
+                        "defence_method"  => $event['defence_method'],
+                        "queryString"     => $event['queryString'],
+                        "risk"            => $event['risk'],
+                        "url"             => $event['url'],
+                        "method"          => $event["method"],
+                        "stacktrace"      => $event['stacktrace']
+                    )),
+                    "user_agent"  => $user_agent,
+                    "attacker_ip" => self::getIP()
+                ];
+            }
+        }
+                
+        $Eventdata = apply_filters( 'soc_event_log', $Eventdata );
+
+        return $Eventdata;
     }
 }
