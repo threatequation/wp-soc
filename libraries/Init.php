@@ -48,9 +48,10 @@ class Init {
         if ( is_admin() && sl_config('enable_admin')  ) {
             return;
         }
-        
+
         $detector = new \SOCLITE\Detector\Validator( $request, $this->filterCollection );
         $detector->run();
+        do_action('soc_after_detection_complete');
         return $this;
     }
 }

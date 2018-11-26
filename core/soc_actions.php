@@ -16,7 +16,7 @@ class soc_actions {
      * get instance 
      * @return object instance of Actions
      */
-    public static function init() {
+    public static function instance() {
         if( self::$instance == null ){
             self::$instance = new self();
         }
@@ -53,7 +53,7 @@ class soc_actions {
         $product_id = sl_config('product_id');
         $api_token = sl_config('api_token');
         $telog = sl_config('telog');
-        
+
         if ( !intval($telog) && empty( $product_id ) && empty( $api_token )) {
             return;
         }
