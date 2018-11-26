@@ -2,8 +2,12 @@
 
     var optEle = $('#wp-soc');
 
-    optEle.find('.tepi').hide();
-    optEle.find('.teat').hide();
+    
+    if (parseInt(optEle.find('#telog').val(), 10) !== 1) {
+        optEle.find('.tepi').hide();
+        optEle.find('.teat').hide();
+    }
+    
     
     optEle.find('#telog').change(function (event) {
         if (this.checked) {

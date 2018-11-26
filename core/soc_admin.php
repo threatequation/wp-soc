@@ -379,7 +379,7 @@ class soc_admin {
 			$options['json_fields'] = esc_html( $options['json_fields'] );
 		}
 
-		$options['telog'] = isset($options['telog'])? (boolean) $options['json_fields'] : false;
+		$options['telog'] = isset($options['telog'])? (int) $options['telog'] : 0;
 
 		soc_utils::view( 'admin_options', $options );
 	}
@@ -443,6 +443,7 @@ class soc_admin {
 					}
 			}
 		}
+		$options['telog'] = isset( $input['telog'] )? $input['telog']: 0;
 		$options['product_id'] = isset( $input['product_id'] )? $input['product_id']: '';
 		$options['api_token'] = isset( $input['api_token'] )? $input['api_token']: '';
 		// Warnings

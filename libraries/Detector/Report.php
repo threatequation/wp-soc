@@ -157,8 +157,6 @@ class Report
             foreach ( (array) $this->getEvents() as $event ) {
                 $Eventdata[] = [
                     "timestamp"   => $timestamp,
-                    "product_id"  => Config::getConfig('product_id'),
-                    "plugin_type" => Config::getConfig('ApplicationName'),
                     "attack_type" => $event['attack_type'],
                     "risk"        => $event['risk'],
                     "attack_data" => json_encode(array(
@@ -176,8 +174,8 @@ class Report
                 ];
             }
         }
-                
-        $Eventdata = apply_filters( 'soc_event_log', $Eventdata );
+
+        $Eventdata = apply_filters( 'soc_event_log_data', $Eventdata );
 
         return $Eventdata;
     }

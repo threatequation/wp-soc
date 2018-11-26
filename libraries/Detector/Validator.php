@@ -37,11 +37,11 @@ class Validator
             }
         } elseif (is_string($value)) {
 
-            // if ($this->is_clean($value)) {
-            //     return;
-            // }
+            if ($this->is_clean($value)) {
+                return;
+            }
             
-            // $value = $this->converter($value);
+            $value = $this->converter($value);
 
             $filter = $this->detect( $key, $value );
             

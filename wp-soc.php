@@ -105,6 +105,7 @@ class WP_SOC {
         require_once SL_PATH . '/core/soc_functions.php';
         require_once SL_PATH . '/core/soc_admin.php';
         require_once SL_PATH . '/core/soc_utils.php';
+        require_once SL_PATH . '/core/soc_actions.php';
 
     }
 
@@ -132,6 +133,7 @@ class WP_SOC {
     public function init () {
         soc_admin::instance();
         \SOCLITE\Init::instance();
+        soc_actions::init();
     }
 
     /**  ------------------Notice-------------------- */

@@ -45,6 +45,10 @@ class Init {
     *
     */
     public function runValidation( array $request ) { 
+        if ( is_admin() && sl_config('enable_admin')  ) {
+            return;
+        }
+        
         $detector = new \SOCLITE\Detector\Validator( $request, $this->filterCollection );
         $detector->run();
         return $this;

@@ -3,6 +3,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 return [
+    'telog' => false,
     'product_id' => '',
     'api_token' => '',
     'db_version' => SL_DB_VERSION,

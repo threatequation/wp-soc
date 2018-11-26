@@ -8,7 +8,6 @@
 		
 		<?php settings_fields('soc_options'); ?>
 		<h3><?php _e( 'General Settings', 'wp-soc' ); ?></h3>
-
 		<table class="form-table">
 			<tbody>
 				<tr valign="top">
