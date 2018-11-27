@@ -75,13 +75,14 @@ class Report
        return $has;
    }
 
-   public function hasRisk( $type ) {
+   public function hasRisk( $type = 'low|medium|high' ) {
         if ( $this->isEmpty() ) {
             return false;
         }
         $has = false;
+        $type = explode("|", $type);
         foreach ( $this->getEvents() as $event ) {
-            if ( $event['risk'] == $type  ) {
+            if ( array_search($event['risk'], $type ) ) {
                 $has = true;
                 break;
             }
@@ -95,12 +96,9 @@ class Report
     }
 
     public function hasRiskMedium () {
-        return $this->hasRisk('medium');
+        return $this->hasRisk('medium|high');
     }
 
-    public function hasRiskLow () {
-        return $this->hasRisk('low');
-    }
 
     public function getEvents()
     {
