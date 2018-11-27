@@ -32,6 +32,10 @@ class soc_actions {
         if ( (int) sl_config('telog')) {
             add_action( 'shutdown', [$this, 'send_log_to_threatEquation'], 10, 1 ); 
         }
+
+        if ((int) sl_config( 'warning_wp_admin' ) ) {
+            add_action( 'soc_after_detection_complete', [$this, 'logout_and_worning']);
+        }
        
     }
 
@@ -72,5 +76,9 @@ class soc_actions {
             );
 
         }
+    }
+
+    public function logout_and_worning() {
+
     }
 }

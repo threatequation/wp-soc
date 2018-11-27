@@ -60,12 +60,51 @@ class Report
        return $ipaddress;
    }
 
+   public function hasEventType( $type ) {
+       if ( $this->isEmpty() ) {
+           return false;
+       }
+       $has = false;
+       foreach ( $this->getEvents() as $event ) {
+           if ( $event['attack_type'] == $type  ) {
+                $has = true;
+                break;
+           }
+       }
 
+       return $has;
+   }
 
+   public function hasRisk( $type ) {
+        if ( $this->isEmpty() ) {
+            return false;
+        }
+        $has = false;
+        foreach ( $this->getEvents() as $event ) {
+            if ( $event['risk'] == $type  ) {
+                $has = true;
+                break;
+            }
+        }
+
+        return $has;
+    }
+
+    public function hasRiskHigh () {
+        return $this->hasRisk('high');
+    }
+
+    public function hasRiskMedium () {
+        return $this->hasRisk('medium');
+    }
+
+    public function hasRiskLow () {
+        return $this->hasRisk('low');
+    }
 
     public function getEvents()
     {
-        return $this->events;
+        return (array) $this->events;
     }
   /**
    * check events is empty or not.
@@ -154,7 +193,7 @@ class Report
         $Eventdata = [];
 
         if ( ! $this->isEmpty() ) {
-            foreach ( (array) $this->getEvents() as $event ) {
+            foreach ( $this->getEvents() as $event ) {
                 $Eventdata[] = [
                     "timestamp"   => $timestamp,
                     "attack_type" => $event['attack_type'],

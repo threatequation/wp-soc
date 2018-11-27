@@ -129,14 +129,6 @@
 						</fieldset>
 					</td>
 				</tr>
-
-				<tr valign="top">
-					<th scope="row"><label for="warning_threshold"><?php _e( 'Warning threshold', 'wp-soc' ); ?></label></th>
-					<td>
-						<input type="text" class="small-text" value="<?php echo esc_attr( $warning_threshold ); ?>" id="warning_threshold" name="sl_options[warning_threshold]" />
-						<span class="description"><?php _e( 'Minimum impact to show warning page.', 'wp-soc' ); ?></span>
-					</td>
-				</tr>
 			</tbody>
 		</table>
 
