@@ -5,7 +5,11 @@ class soc_intrusion {
     public static $instance = null;
 
     function __construct () {
-        add_action( 'soc_after_detection_complete', [$this, 'get_report_data'] );
+        $enable_intrusion_logs = sl_config('enable_intrusion_logs');
+        
+        if ($enable_intrusion_logs) {
+            add_action( 'soc_after_detection_complete', [$this, 'get_report_data'] );
+        }
     }
 
     /**

@@ -406,7 +406,26 @@ class soc_admin {
 
 		$options = sl_config();
 
-		foreach ( array( 'email', 'email_threshold', 'exception_fields', 'html_fields', 'json_fields' ) as $key ) {
+		$options['telog'] = isset( $input['telog'] )? $input['telog']: 0;
+		$options['product_id'] = isset( $input['product_id'] )? $input['product_id']: '';
+		$options['api_token'] = isset( $input['api_token'] )? $input['api_token']: '';
+
+
+		$options['enable_admin']             = isset( $input['enable_admin'] ) ? 1 : 0;
+		$options['enable_intrusion_logs']    = isset( $input['enable_intrusion_logs'] ) ? 1 : 0;
+
+		$options['email_notifications']      = isset( $input['email_notifications'] ) ? 1 : 0;
+		if ( !empty($input['email']) && is_email( $input['email'] ) ) {
+			$options['email'] = $input['email']; 
+		} else {
+			$options['email'] = get_option( 'admin_email' );
+		}
+		$options['email_risk_level'] = isset($input['email_risk_level'])? intval($input['email_risk_level']): 3;
+
+		
+
+
+		foreach ( array( 'exception_fields', 'html_fields', 'json_fields' ) as $key ) {
 			if ( ! isset( $input[$key] ) ) {
 				continue;
 			}
@@ -414,16 +433,6 @@ class soc_admin {
 			$options[$key] = $input[$key];
 
 			switch ( $key ) {
-				case 'email':
-					if ( !is_email( $options[$key] ) ) {
-						$options[$key] = get_option( 'admin_email' );
-					}
-					break;
-
-				case 'email_threshold':
-					$options[$key] = absint( $options[$key] );
-					break;
-
 				case 'exception_fields':
 				case 'html_fields':
 				case 'json_fields':
@@ -443,17 +452,13 @@ class soc_admin {
 					}
 			}
 		}
-		$options['telog'] = isset( $input['telog'] )? $input['telog']: 0;
-		$options['product_id'] = isset( $input['product_id'] )? $input['product_id']: '';
-		$options['api_token'] = isset( $input['api_token'] )? $input['api_token']: '';
+
+		
 		// Warnings
 		$options['warning_wp_admin']  = isset( $input['warning_wp_admin'] ) ? 1 : 0;
 		$options['warning_threshold'] = isset( $input['warning_threshold'] ) ? absint( $input['warning_threshold'] ): 20;
 
 		// Checkboxes
-		$options['email_notifications']      = isset( $input['email_notifications'] ) ? 1 : 0;
-		$options['enable_admin']             = isset( $input['enable_admin'] ) ? 1 : 0;
-		$options['enable_intrusion_logs']    = isset( $input['enable_intrusion_logs'] ) ? 1 : 0;
 
 
 		// Banning

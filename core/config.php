@@ -7,7 +7,7 @@ return [
     'product_id' => '',
     'api_token' => '',
     'db_version' => SL_DB_VERSION,
-    'email_threshold' => 20,
+    'email_risk_level' => 3, // High
     'email_notifications' => false,
     'email' => get_option( 'admin_email' ),
     'exception_fields' => [

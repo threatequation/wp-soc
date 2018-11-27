@@ -71,33 +71,12 @@
 						</fieldset>
 					</td>
 				</tr>
-
-				<tr valign="top">
-					<th scope="row"><?php _e( 'Automatic Updates', 'wp-soc' ); ?></th>
-					<td>
-						<fieldset>
-							<legend class="screen-reader-text"><span><?php _e( 'Automatic Updates', 'wp-soc' ); ?></span></legend>
-							<label for="enable_automatic_updates">
-								<input type="checkbox" value="1" id="enable_automatic_updates" name="sl_options[enable_automatic_updates]" <?php checked( '1', $enable_automatic_updates ); ?> />
-								<?php _e( 'Enable automatic updates for default_filter.xml and Converter.php', 'wp-soc' ); ?>
-							</label>
-						</fieldset>
-					</td>
-				</tr>
 			</tbody>
 		</table>
 
 		<h3><?php _e( 'Email', 'wp-soc' ); ?></h3>
 		<table class="form-table">
 			<tbody>
-				<tr valign="top">
-					<th scope="row"><label for="email"><?php _e( 'E-mail address', 'wp-soc' ); ?></label></th>
-					<td>
-						<input type="text" class="regular-text" value="<?php echo esc_attr( $email ); ?>" id="email" name="sl_options[email]" />
-						<span class="description"><?php _e( 'This address is used to send intrusion alerts.', 'wp-soc' ); ?></span>
-					</td>
-				</tr>
-
 				<tr valign="top">
 					<th scope="row"><?php _e( 'E-mail Notifications', 'wp-soc' ); ?></th>
 					<td>
@@ -112,10 +91,26 @@
 				</tr>
 
 				<tr valign="top">
-					<th scope="row"><label for="email_threshold"><?php _e( 'E-mail threshold', 'wp-soc' ); ?></label></th>
+					<th scope="row"><label for="email"><?php _e( 'E-mail address', 'wp-soc' ); ?></label></th>
 					<td>
-						<input type="text" class="small-text" value="<?php echo esc_attr( $email_threshold ); ?>" id="email_threshold" name="sl_options[email_threshold]" />
-						<span class="description"><?php _e( 'Minimum impact to send an alert email.', 'wp-soc' ); ?></span>
+						<input type="text" class="regular-text" value="<?php echo esc_attr( $email ); ?>" id="email" name="sl_options[email]" />
+						<span class="description"><?php _e( 'This address is used to send intrusion alerts.', 'wp-soc' ); ?></span>
+					</td>
+				</tr>
+
+				
+
+				<tr valign="top">
+					<th scope="row"><label for="risk_leemail_risk_levelvel"><?php _e( 'E-mail Risk Level', 'wp-soc' ); ?></label></th>
+					<td>
+						<fieldset>
+						
+							<select class="email_risk_level" id="email_risk_level" name="sl_options[email_risk_level]">
+								<option value="1" <?php selected( $email_risk_level, 1 ); ?> ><?php _e( 'Low', 'wp-soc' ); ?></option>
+								<option value="2" <?php selected( $email_risk_level, 2 ); ?> ><?php _e( 'Medium', 'wp-soc' ); ?></option>
+								<option value="3" <?php selected( $email_risk_level, 3 ); ?> ><?php _e( 'High', 'wp-soc' ); ?></option>
+							</select>
+						</fieldset>
 					</td>
 				</tr>
 			</tbody>
