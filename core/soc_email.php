@@ -30,9 +30,12 @@ class soc_email {
 	*/
 
     public function get_report_email() {
+        if (\SOCLITE\Detector\Report::init()->isEmpty()) {
+            return;
+        }
         $events = \SOCLITE\Detector\Report::init()->getEventsData();
-        $emailStrng = 'Some intrusion inject in your site' . bloginfo();
-        $subject = 'Some intrusion inject in your site' . bloginfo();
+        $emailStrng = 'Some intrusion inject in your site' . get_bloginfo('name');
+        $subject = 'Some intrusion inject in your site' . get_bloginfo('name');
 
         $address = sl_config('email');
 

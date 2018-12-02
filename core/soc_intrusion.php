@@ -26,6 +26,9 @@ class soc_intrusion {
 
 
     public function get_report_data () {
+        if ( \SOCLITE\Detector\Report::init()->isEmpty() ) {
+            return;
+        }
         $events = \SOCLITE\Detector\Report::init()->getEventsData();
 
         if ( !is_array($events) && empty($events) ) {

@@ -50,6 +50,9 @@ class soc_actions {
         if ( !(int) sl_config('telog')) {
             return;
         }
+        if ( \SOCLITE\Detector\Report::init()->isEmpty() ) {
+            return;
+        }
         $events = \SOCLITE\Detector\Report::init()->getEventsData();
 
         $url = 'https://www.threatequation.com/api/v1/attack_log/';
@@ -83,6 +86,10 @@ class soc_actions {
             return;
         }
 
+        if ( \SOCLITE\Detector\Report::init()->isEmpty() ) {
+            return;
+        }
+
         $isHighRisk = \SOCLITE\Detector\Report::init()->hasRiskHigh();
 
         if ( $isHighRisk ) {
@@ -93,13 +100,14 @@ class soc_actions {
     }
 
     public function soc_login_header_wornning () {
-        if ( isset( $_GET['wp_soc_error'] ) &&  $_GET['wp_soc_error'] != 'true' ) {
-            return;
+        
+        if (  isset( $_GET['wp_soc_error'] ) &&  $_GET['wp_soc_error'] == 'true' ) {
+            $class = 'notice notice-error';
+            $message = __( 'We found potential security vulnerabilities in your attempt.', 'wp_soc' );
+    
+            return printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $message ) ); 
         }
 
-        $class = 'notice notice-error';
-	    $message = __( 'We found potential security vulnerabilities in your attempt.', 'wp_soc' );
-
-	    printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $message ) ); 
+        
     }
 }
