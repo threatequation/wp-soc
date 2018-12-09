@@ -75,144 +75,146 @@ class soc_admin {
 			$options = $this->options_validate( $_POST );
 			
 		}
-
+		$this->do_action();
 		// // Add admin CSS
 		// wp_enqueue_style( 'soc_styles', ThreatEquation::plugin_url() . 'css/mscr.css', array(), ThreatEquation::VERSION );
 
 	}
 
-	// /**
-	//  * Perform an action based on the request
-	//  *
-	//  * @return void
-	//  */
-	// private function do_action() {
-	// 	global $wpdb;
-	// 	$sendback = remove_query_arg( array( 'intrusions' ), wp_get_referer() );
+	/**
+	 * Perform an action based on the request
+	 *
+	 * @return void
+	 */
+	private function do_action() {
+		global $wpdb;
+		$table = $wpdb->prfix . SL_INTRUSIONS_TABLE;
 
-	// 	// Handle bulk actions
-	// 	if ( isset( $_GET['doaction'] ) || isset( $_GET['doaction2'] ) ) {
-	// 		check_admin_referer( 'mscr_action_intrusions_bulk' );
+		$sendback = remove_query_arg( array( 'intrusions' ), wp_get_referer() );
 
-	// 		if ( ( $_GET['action'] != '' || $_GET['action2'] != '' ) && ( isset( $_GET['page'] ) && isset( $_GET['intrusions'] ) ) ) {
-	// 			$intrusion_ids = $_GET['intrusions'];
-	// 			$doaction = ( $_GET['action'] != '' ) ? $_GET['action'] : $_GET['action2'];
-	// 		} else {
-	// 			wp_redirect( admin_url( 'index.php?page=mscr_intrusions' ) );
-	// 			exit;
-	// 		}
+		// Handle bulk actions
+		if ( isset( $_GET['doaction'] ) || isset( $_GET['doaction2'] ) ) {
+			check_admin_referer( 'wp_soc_bulk_action' );
 
-	// 		switch ( $doaction ) {
-	// 			case 'bulk_delete':
-	// 				$deleted = 0;
-	// 				foreach ( (array) $intrusion_ids as $intrusion_id ) {
-	// 					if ( ! current_user_can( 'activate_plugins' ) )
-	// 						wp_die( __( 'You are not allowed to delete this item.', 'wp-soc-lite' ) );
+			if ( ( $_GET['action'] != '' || $_GET['action2'] != '' ) && ( isset( $_GET['page'] ) && isset( $_GET['intrusions'] ) ) ) {
+				$intrusion_ids = $_GET['intrusions'];
+				$doaction = ( $_GET['action'] != '' ) ? $_GET['action'] : $_GET['action2'];
+			} else {
+				wp_redirect( admin_url( 'index.php?page=mscr_intrusions' ) );
+				exit;
+			}
 
-	// 					$sql    = $wpdb->prepare( 'DELETE FROM ' . $wpdb->tewp_intrusions . ' WHERE id = %d', $intrusion_id );
-	// 					$result = $wpdb->query( $sql );
+			switch ( $doaction ) {
+				case 'bulk_delete':
+					$deleted = 0;
+					foreach ( (array) $intrusion_ids as $intrusion_id ) {
+						if ( ! current_user_can( 'activate_plugins' ) )
+							wp_die( __( 'You are not allowed to delete this item.', 'wp-soc-lite' ) );
 
-	// 					if ( ! $result ) {
-	// 						wp_die( __( 'Error in deleting...', 'wp-soc-lite' ) );
-	// 					}
-	// 					$deleted++;
-	// 				}
-	// 				$sendback = add_query_arg( 'deleted', $deleted, $sendback );
-	// 				break;
+						$sql    = $wpdb->prepare( 'DELETE FROM ' . $table . ' WHERE id = %d', $intrusion_id );
+						$result = $wpdb->query( $sql );
 
-	// 			case 'bulk_exclude':
-	// 				$excluded = 0;
-	// 				foreach ( (array) $intrusion_ids as $intrusion_id ) {
-	// 					if ( ! current_user_can( 'activate_plugins' ) ) {
-	// 						wp_die( __( 'You are not allowed to exclude this item.', 'wp-soc-lite' ) );
-	// 					}
+						if ( ! $result ) {
+							wp_die( __( 'Error in deleting...', 'wp-soc-lite' ) );
+						}
+						$deleted++;
+					}
+					$sendback = add_query_arg( 'deleted', $deleted, $sendback );
+					break;
 
-	// 					// Get the intrusion field to exclude
-	// 					$sql    = $wpdb->prepare( "SELECT name FROM {$wpdb->tewp_intrusions} WHERE id = %d", $intrusion_id );
-	// 					$result = $wpdb->get_row( $sql );
+				case 'bulk_exclude':
+					$excluded = 0;
+					foreach ( (array) $intrusion_ids as $intrusion_id ) {
+						if ( ! current_user_can( 'activate_plugins' ) ) {
+							wp_die( __( 'You are not allowed to exclude this item.', 'wp-soc-lite' ) );
+						}
 
-	// 					if ( ! $result ) {
-	// 						wp_die( __( 'Error in excluding...', 'wp-soc-lite' ) );
-	// 					}
+						// Get the intrusion field to exclude
+						$sql    = $wpdb->prepare( "SELECT name FROM {$table} WHERE id = %d", $intrusion_id );
+						$result = $wpdb->get_row( $sql );
 
-	// 					$mscr = ThreatEquation::instance();
-	// 					$exceptions = $mscr->get_option( 'exception_fields' );
+						if ( ! $result ) {
+							wp_die( __( 'Error in excluding...', 'wp-soc-lite' ) );
+						}
 
-	// 					// Only add the field once
-	// 					if ( ! in_array( $result->name, $exceptions ) ) {
-	// 						$exceptions[] = $result->name;
-	// 					}
+						$mscr = ThreatEquation::instance();
+						$exceptions = $mscr->get_option( 'exception_fields' );
 
-	// 					$mscr->set_option( 'exception_fields', $exceptions );
-	// 					$excluded++;
-	// 				}
-	// 				$sendback = add_query_arg( 'excluded', $excluded, $sendback );
-	// 				break;
-	// 		}
+						// Only add the field once
+						if ( ! in_array( $result->name, $exceptions ) ) {
+							$exceptions[] = $result->name;
+						}
 
-	// 		if ( isset( $_GET['action'] ) ) {
-	// 			$sendback = remove_query_arg( array( 'action', 'action2', 'intrusions' ), $sendback );
-	// 		}
+						$mscr->set_option( 'exception_fields', $exceptions );
+						$excluded++;
+					}
+					$sendback = add_query_arg( 'excluded', $excluded, $sendback );
+					break;
+			}
 
-	// 		wp_redirect( $sendback );
-	// 		exit;
-	// 	} else if ( ! empty( $_GET['_wp_http_referer'] ) ) {
-	// 		wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce' ), stripslashes( $_SERVER['REQUEST_URI'] ) ) );
-	// 		exit;
-	// 	}
+			if ( isset( $_GET['action'] ) ) {
+				$sendback = remove_query_arg( array( 'action', 'action2', 'intrusions' ), $sendback );
+			}
 
-	// 	// Handle other actions
-	// 	$action = MSCR_Utils::get( 'action' );
-	// 	$id     = (int) MSCR_Utils::get( 'intrusion' );
+			wp_redirect( $sendback );
+			exit;
+		} else if ( ! empty( $_GET['_wp_http_referer'] ) ) {
+			wp_redirect( remove_query_arg( array( '_wp_http_referer', '_wpnonce' ), stripslashes( $_SERVER['REQUEST_URI'] ) ) );
+			exit;
+		}
 
-	// 	if ( ! $action )
-	// 		return;
+		// Handle other actions
+		$action = MSCR_Utils::get( 'action' );
+		$id     = (int) MSCR_Utils::get( 'intrusion' );
 
-	// 	switch ( $action ) {
-	// 		case 'exclude':
-	// 			check_admin_referer( 'mscr_action_exclude_intrusion' );
-	// 			if ( ! current_user_can( 'activate_plugins' ) )
-	// 				wp_die( __( 'You are not allowed to exclude this item.', 'wp-soc-lite' ) );
+		if ( ! $action )
+			return;
 
-	// 			// Get the intrusion field to exclude
-	// 			$sql    = $wpdb->prepare( "SELECT name FROM {$wpdb->tewp_intrusions} WHERE id = %d", $id );
-	// 			$result = $wpdb->get_row( $sql );
+		switch ( $action ) {
+			case 'exclude':
+				check_admin_referer( 'mscr_action_exclude_intrusion' );
+				if ( ! current_user_can( 'activate_plugins' ) )
+					wp_die( __( 'You are not allowed to exclude this item.', 'wp-soc-lite' ) );
 
-	// 			if ( ! $result ) {
-	// 				wp_die( __( 'Error in excluding...', 'wp-soc-lite' ) );
-	// 			}
+				// Get the intrusion field to exclude
+				$sql    = $wpdb->prepare( "SELECT name FROM {$table} WHERE id = %d", $id );
+				$result = $wpdb->get_row( $sql );
 
-	// 			$mscr = ThreatEquation::instance();
-	// 			$exceptions = $mscr->get_option( 'exception_fields' );
+				if ( ! $result ) {
+					wp_die( __( 'Error in excluding...', 'wp-soc-lite' ) );
+				}
 
-	// 			// Only add the field once
-	// 			if ( ! in_array( $result->name, $exceptions ) ) {
-	// 				$exceptions[] = $result->name;
-	// 			}
+				$mscr = ThreatEquation::instance();
+				$exceptions = $mscr->get_option( 'exception_fields' );
 
-	// 			$mscr->set_option( 'exception_fields', $exceptions );
-	// 			$sendback = add_query_arg( 'excluded', $id, $sendback );
-	// 			break;
+				// Only add the field once
+				if ( ! in_array( $result->name, $exceptions ) ) {
+					$exceptions[] = $result->name;
+				}
 
-	// 		case 'delete':
-	// 			check_admin_referer( 'mscr_action_delete_intrusion' );
-	// 			if ( ! current_user_can( 'activate_plugins' ) )
-	// 				wp_die( __( 'You are not allowed to delete this item.', 'wp-soc-lite' ) );
+				$mscr->set_option( 'exception_fields', $exceptions );
+				$sendback = add_query_arg( 'excluded', $id, $sendback );
+				break;
 
-	// 			$sql    = $wpdb->prepare( 'DELETE FROM ' . $wpdb->tewp_intrusions . ' WHERE id = %d', $id );
-	// 			$result = $wpdb->query( $sql );
+			case 'delete':
+				check_admin_referer( 'mscr_action_delete_intrusion' );
+				if ( ! current_user_can( 'activate_plugins' ) )
+					wp_die( __( 'You are not allowed to delete this item.', 'wp-soc-lite' ) );
 
-	// 			if ( ! $result ) {
-	// 				wp_die( __( 'Error in deleting...', 'wp-soc-lite' ) );
-	// 			}
+				$sql    = $wpdb->prepare( 'DELETE FROM ' . $table . ' WHERE id = %d', $id );
+				$result = $wpdb->query( $sql );
 
-	// 			$sendback = add_query_arg( 'deleted', 1, $sendback );
-	// 			break;
-	// 	}
+				if ( ! $result ) {
+					wp_die( __( 'Error in deleting...', 'wp-soc-lite' ) );
+				}
 
-	// 	wp_redirect( $sendback );
-	// 	exit;
-	// }
+				$sendback = add_query_arg( 'deleted', 1, $sendback );
+				break;
+		}
+
+		wp_redirect( $sendback );
+		exit;
+	}
 
 	/**
 	 * Add custom screen options & help to a plugin page
