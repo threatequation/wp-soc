@@ -88,7 +88,7 @@ class soc_admin {
 	 */
 	private function do_action() {
 		global $wpdb;
-		$table = $wpdb->prfix . SL_INTRUSIONS_TABLE;
+		$table = $wpdb->prefix . SL_INTRUSIONS_TABLE;
 
 		$sendback = remove_query_arg( array( 'intrusions' ), wp_get_referer() );
 
