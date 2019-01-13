@@ -20,11 +20,14 @@ class soc_admin {
      */
     public function __construct() {
 		
-		add_action( 'admin_init', array( $this, 'admin_init' ) );
-		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+		add_action( 'admin_init', [ $this, 'admin_init' ] );
+		add_action( 'admin_menu', [ $this, 'admin_menu' ] );
+		add_action( 'admin_enqueue_scripts', [$this, 'soc_register_scripts'] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'soc_enqueue_script'] );
 		// add_filter( 'screen_settings', array( $this, 'screen_settings' ), 10, 2 );
 		// add_filter( 'set-screen-option', array( $this, 'set_screen_option' ), 10, 3 );
 		add_filter( 'plugin_action_links_'. SL_BAIS_NAME, array( $this, 'plugin_action_links' ) );
+		
     }
     
      /**
@@ -91,19 +94,20 @@ class soc_admin {
 		$table = $wpdb->prefix . SL_INTRUSIONS_TABLE;
 
 		$sendback = remove_query_arg( array( 'intrusions' ), wp_get_referer() );
-
+		
 		// Handle bulk actions
 		if ( isset( $_GET['doaction'] ) || isset( $_GET['doaction2'] ) ) {
+
 			check_admin_referer( 'wp_soc_bulk_action' );
 
 			if ( ( $_GET['action'] != '' || $_GET['action2'] != '' ) && ( isset( $_GET['page'] ) && isset( $_GET['intrusions'] ) ) ) {
 				$intrusion_ids = $_GET['intrusions'];
 				$doaction = ( $_GET['action'] != '' ) ? $_GET['action'] : $_GET['action2'];
 			} else {
-				wp_redirect( admin_url( 'index.php?page=mscr_intrusions' ) );
-				exit;
+				// wp_redirect( admin_url( 'index.php?page=mscr_intrusions' ) );
+				// exit;
 			}
-
+			
 			switch ( $doaction ) {
 				case 'bulk_delete':
 					$deleted = 0;
@@ -164,8 +168,8 @@ class soc_admin {
 		}
 
 		// Handle other actions
-		$action = MSCR_Utils::get( 'action' );
-		$id     = (int) MSCR_Utils::get( 'intrusion' );
+		$action = '';
+		$id     = (int) 1;
 
 		if ( ! $action )
 			return;
@@ -362,9 +366,6 @@ class soc_admin {
 		
 		$options = sl_config();
 
-		wp_enqueue_script('soc-options', SL_URI. '/assest/js/options.js', ['jquery'], SL_VERSION, true );
-
-
 		// Prep exception data
 		$options['exception_fields'] = implode( "\r\n", $options['exception_fields'] );
 		$options['html_fields'] = implode( "\r\n", $options['html_fields'] );
@@ -401,7 +402,7 @@ class soc_admin {
 
 
 		if ( ! wp_verify_nonce( $input['_wpnonce'], 'soc_options-options' ) ) {
-     		die( 'Security check' );
+     		//die( 'Security check' );
      	}
 
 		$input = $input['sl_options'];
@@ -472,5 +473,26 @@ class soc_admin {
 		update_option( 'soc_lite_options', $options );
 		
 		return $options;
+	}
+
+	function soc_register_scripts () {
+		wp_register_script('soc-js', SL_URI. '/assest/js/wp-soc-lite.js', ['jquery'], SL_VERSION, true );
+	}
+
+	function soc_enqueue_script () {
+		$page = isset( $_GET['page'] ) ? wp_unslash( $_GET['page'] ): '';
+
+		if ( empty( $page ) && ( 'soc_lite'  !== $page || 'soc_options' !== $page ) ) {
+			return;
+		}
+
+		wp_enqueue_script( 'soc-js' );
+
+		wp_localize_script( 'soc-js', 'WP_SOC', [
+			'ajaxurl'                  => admin_url( 'admin-ajax.php' ),
+			'nonce'                    => wp_create_nonce( 'soc_nonce' ),
+			'base_url'                 => home_url(),
+			'current_user'             => wp_get_current_user(),
+		]);
 	}
 }

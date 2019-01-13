@@ -81,12 +81,12 @@
 									<?php switch ($key) :
 										case 'type':
 											$exclude_link = wp_nonce_url( admin_url( 'index.php?page=mscr_intrusions&action=exclude&intrusion=' . $intrusion->id ), 'mscr_action_exclude_intrusion' );
-											$delete_link  = wp_nonce_url( admin_url( 'index.php?page=mscr_intrusions&action=delete&intrusion=' . $intrusion->id ), 'mscr_action_delete_intrusion' );
+											
 ?>
-											<strong><a href="<?php echo $exclude_link; ?>" title="<?php echo esc_attr( sprintf( __( 'Exclude &#8220;%s&#8221;' ), $intrusion->type ) ); ?>"><?php echo esc_html( $intrusion->type ); ?></a></strong>
+											<strong><a href="" title="<?php echo esc_attr( sprintf( __( 'Exclude &#8220;%s&#8221;' ), $intrusion->type ) ); ?>"><?php echo esc_html( $intrusion->type ); ?></a></strong>
 											<div class="row-actions">
-												<span class="exclude"><a title="<?php echo esc_attr( __( 'Add this item to the exception fields list', 'wp-soc-lite' ) ); ?>" href="<?php echo $exclude_link; ?>"><?php _e( 'Exclude', 'wp-soc-lite' ); ?></a> | </span>
-												<span class="delete"><a title="<?php echo esc_attr( __( 'Delete this item', 'wp-soc-lite' ) ); ?>" class="delete submitdelete" href="<?php echo $delete_link; ?>"><?php _e( 'Delete', 'wp-soc-lite' ); ?></a></span>
+												<span class="exclude"><a title="<?php echo esc_attr( __( 'Add this item to the exception fields list', 'wp-soc-lite' ) ); ?>" href="" data-id="<?php echo esc_attr($intrusion->id) ?>" ><?php _e( 'Exclude', 'wp-soc-lite' ); ?></a> | </span>
+												<span class="delete"><a title="<?php echo esc_attr( __( 'Delete this item', 'wp-soc-lite' ) ); ?>" class="delete-intrusion" href="" data-id="<?php echo esc_attr($intrusion->id) ?>" ><?php _e( 'Delete', 'wp-soc-lite' ); ?></a></span>
 											</div>
 <?php
 											break;

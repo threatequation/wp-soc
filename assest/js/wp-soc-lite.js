@@ -19,4 +19,23 @@
         }
     });
 
+    function httpRequest (property) {
+        var before = function( xhr ) {
+            xhr.setRequestHeader("X-WP-Nonce", WP_SOC.nonce);
+        };
+
+        property.beforeSend = typeof property.beforeSend === 'undefined' ? before : property.beforeSend;
+
+        return jQuery.ajax(property);
+    }
+
+    $('.delete-intrusion').click(function(e) {
+        e.preventDefault();
+        let target = $(e.target);
+        let id = target.data('id')
+        
+        console.log(id);
+    })
+
+
 } )( jQuery );
